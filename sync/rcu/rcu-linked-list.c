@@ -68,21 +68,19 @@ static ssize_t dog_attr_show(struct kobject *kobj, struct kobj_attribute *attr,
 			     char *buf)
 {
 	struct dog *entry;
-	char ibuf[DOG_ENTRY_NBYTES];
 	size_t nbytes = 0;
 
 	PR_DEBUG("show requested\n");
-
 	/* Where RCU read-side critical section starts */
 	rcu_read_lock();
+	/* Copy directly to *buf, which is the output buffer */
 	list_for_each_entry_rcu(entry, &dog_list, list) {
-		nbytes += snprintf(&ibuf[nbytes], DOG_ENTRY_NBYTES,
+		nbytes += snprintf(&buf[nbytes], DOG_ENTRY_NBYTES,
 				   "%s %d %s\n", entry->breed, entry->age,
 				   entry->training_easy ? "true" : "false");
 	}
 	/* Where RCU read-side critical section ends */
 	rcu_read_unlock();
-	memcpy(buf, ibuf, DOG_ENTRY_NBYTES);
 	return nbytes;
 }
 
