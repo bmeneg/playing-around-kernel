@@ -93,6 +93,7 @@ static ssize_t dog_attr_store(struct kobject *kobj, struct kobj_attribute *attr,
 	unsigned int idx = 0;
 	int dog_age, dog_training;
 	int err;
+	unsigned long irq_flags;
 
 	PR_DEBUG("store requested\n");
 
@@ -117,17 +118,26 @@ static ssize_t dog_attr_store(struct kobject *kobj, struct kobj_attribute *attr,
 	if (!entry)
 		return -ENOMEM;
 
-	PR_DEBUG("%s %d %s\n", dog_attr[0], dog_age,
-		 dog_training ? "true" : "false");
-
 	entry->breed = dog_attr[0];
 	entry->age = dog_age;
 	entry->training_easy = dog_training ? true : false;
-	/* Spinlock to allow only one updater thread a time */
-	spin_lock(&list_update_lock);
+	/* Spinlock to allow only one updater thread a time. But pay attention,
+	 * the deletion code to this same data structure is running concurrently
+	 * in interrupt context (from a timer callback funtions), hence the
+	 * spinlock should disable IRQs in this CPU specifically, avoiding a
+	 * deadlock. Locks, in general, acts in a per-CPU manner, since there is
+	 * no problem a task (IRQ or not) to be locked in a different CPU
+	 * waiting a lock to be released, it doesn't feature a _deadlock_.
+	 * All that said, a call to spin_lock_irqsave()/spin_unlock_irqrestore()
+	 * will be made, instead the normal spin_lock()/spin_unlock() function
+	 */
+	spin_lock_irqsave(&list_update_lock, irq_flags);
 	list_add_tail_rcu(&entry->list, &dog_list);
 	dog_list_size++;
-	spin_unlock(&list_update_lock);
+	spin_unlock_irqrestore(&list_update_lock, irq_flags);
+
+	PR_DEBUG("%s %d %s\n", dog_attr[0], dog_age,
+		 dog_training ? "true" : "false");
 	return count;
 }
 
@@ -165,13 +175,18 @@ static void timer_remove_dog(unsigned long data)
 	 * any other thread executing this function. It'll be reexecuted just
 	 * after mod_timer() is called and than reenabling the timer for the
 	 * next interruption. */
-	entry = list_first_entry(&dog_list, struct dog, list);
-	if (entry) {
+	if (!list_empty(&dog_list)) {
 		/* Any update (insertion/deletion) must be controlled in such a
-		 * way that just one thread traverses the list at a time */
+		 * way that just one thread traverses the list at a time. And
+		 * considering the control of IRQ vs process context lock
+		 * sharing issue was handled in reader's code,
+		 * spin_lock()/spin_unlock() calls can be made here. */
 		spin_lock(&list_update_lock);
+		entry = list_first_entry(&dog_list, struct dog, list);
 		/* Delete dog entry following RCU mechanism */
 		list_del_rcu(&entry->list);
+		PR_DEBUG("entry deleted: %s,%d,%s\n", entry->breed, entry->age,
+			 entry->training_easy ? "true" : "false");
 		/* Wait all RCU readers left their read-side critical sections
 		 * and free the old entry memory. This function abrevs the use
 		 * of call_rcu(), a dummy callback just for kfree() the element
