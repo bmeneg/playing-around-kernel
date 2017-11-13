@@ -32,6 +32,8 @@
 
 /* Dummy structure to examplify the linked list and rcu behaviour */
 struct dog {
+	/* Field used as link point between struct dog and the linked list
+	 * itself */
 	struct list_head list;
 	/* Field used by RCU mechanism to track structures awaiting grace
 	 * periods */
@@ -63,7 +65,10 @@ LIST_HEAD(dog_list);
  * be manually updated in every insertion/removal */
 static size_t dog_list_size;
 
-/* Function called everytime the sysfs attribute file is read */
+/*
+ * Function called everytime the sysfs attribute file is read.
+ * Example: cat /sys/rcu-linked-list/dog
+ */
 static ssize_t dog_attr_show(struct kobject *kobj, struct kobj_attribute *attr,
 			     char *buf)
 {
@@ -84,7 +89,10 @@ static ssize_t dog_attr_show(struct kobject *kobj, struct kobj_attribute *attr,
 	return nbytes;
 }
 
-/* Function called everytime the sysfs attribute file is written */
+/*
+ * Function called everytime the sysfs attribute file is written.
+ * Example: echo Golden,3,0 > /sys/rcu-linked-list/dog
+ */
 static ssize_t dog_attr_store(struct kobject *kobj, struct kobj_attribute *attr,
 			      const char *buf, size_t count)
 {
