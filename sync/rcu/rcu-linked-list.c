@@ -196,7 +196,7 @@ static void timer_remove_dog(unsigned long data)
 		spin_unlock(&list_update_lock);
 	}
 	/* Reassign timer's expiration time */
-	mod_timer(&removal_timer, msecs_to_jiffies(2000));
+	mod_timer(&removal_timer, jiffies + msecs_to_jiffies(5000));
 }
 
 static int __init rcu_linked_list_init(void)
@@ -205,23 +205,21 @@ static int __init rcu_linked_list_init(void)
 
 	spin_lock_init(&list_update_lock);
 
-	/* Removal timer setup and initialization */
-	setup_timer(&removal_timer, timer_remove_dog, 0);
-
 	/* Create and add a kobject dentry (directory entry) in sysfs */
 	dog_kobj = kobject_create_and_add("rcu-linked-list", NULL);
 	if (!dog_kobj) {
 		 err = -ENOMEM;
 		 goto timer_cleanup;
 	}
-
 	/* Add all attributes (files) inside the dentry previously created */
 	err = sysfs_create_group(dog_kobj, &attr_group);
 	if (err)
 		goto sysfs_cleanup;
 
-	/* Set expiration time for 2 seconds from now */
-	mod_timer(&removal_timer, jiffies + msecs_to_jiffies(2000));
+	/* Removal timer setup and initialization */
+	setup_timer(&removal_timer, timer_remove_dog, 0);
+	/* Set expiration time for 5 seconds from now */
+	mod_timer(&removal_timer, jiffies + msecs_to_jiffies(5000));
 
 	PR_DEBUG("module loaded\n");
 	return 0;
