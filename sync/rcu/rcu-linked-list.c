@@ -1,10 +1,9 @@
 /*
- * Goals:
- * - linked list - OK
- * - rcu over linked list - OK (not ready on nodes removal)
- * - sysfs entries for read and update linked list nodes - OK
- * - remove nodes from linked list in a time-based way (timers)
- * - lock to linked-list updates - OK
+ * Copyright (c) 2017 Bruno E. O. Meneguele <bmeneguele@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
  */
 
 /* __init/exit, macros (MODULE_*) that initializes the module itself */
