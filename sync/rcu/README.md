@@ -63,7 +63,7 @@ $ dmesg | tail
 ## Linked-list insertion
 
 To add elements to the linked list in kernel space you can echo some value to a
-file in sysfs. The value pattern is `breed,age,trainins_is_easy`, being `age` in
+file in sysfs. The value pattern is `breed,age,training_is_easy`, being `age` in
 months and which has the following types: `string,int,bool`, although the bool
 value can be anything from 0 to INT_MAX, but will be handled internally as a
 boolean value (anything different from 0 is true).
