@@ -42,8 +42,23 @@ $ make
 # insmod rcu-linked-list.ko
 ```
 
-Take a look in the kernel's message log (`dmesg | tail`) to confirm that the
-module was correctly loaded.
+Take a look in the kernel's message log (`dmesg`) to confirm that the
+module was correctly loaded:
+
+```
+$ dmesg | tail
+...
+[rcu_linked_list] rcu_linked_list_init:231:: module loaded
+```
+
+To remove the module just type:
+
+```
+# rmmod rcu-linked-list
+$ dmesg | tail
+...
+[rcu_linked_list] rcu_linked_list_exit:252:: module unloaded
+```
 
 ## Linked-list insertion
 
