@@ -1,16 +1,48 @@
+/*
+ * Copyright (c) 2018 Bruno E. O. Meneguele <bmeneguele@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ */
+
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/fs.h>
 
 #include "utils.h"
 
+struct file_system_type myfs_type = {
+	.owner = THIS_MODULE,
+	.name = "myfs",
+};
+
+
 static int __init myfs_init(void)
 {
+	int err;
+
 	PR_DEBUG("myfs init\n");
-	return 0;
+
+	err = register_filesystem(&myfs_type);
+	if (err) 
+		PR_ERROR("failed to register myfs. error %d\n", err);
+	else
+		PR_DEBUG("sucessfully registered myfs\n");
+
+	return err;
 }
 
 static void __exit myfs_exit(void)
 {
+	int err;
+
+	err = unregister_filesystem(&myfs_type);
+	if (err) 
+		PR_ERROR("failed to unregister myfs. error %d\n", err);
+	else
+		PR_DEBUG("sucessfully unregistered myfs\n");
+
 	PR_DEBUG("myfs exit\n");
 }
 

@@ -26,10 +26,10 @@ VFS follows an object-oriented scheme to manage its data, in other
 words, every data that moves on VFS is handled as objects (C
 structures). There are four primary object types:
 
-* *superblock*, which represents a specific mounted filesystem
-* *inode*, which represents a specific file
-* *dentry*, which represents a directory entry in a path
-* *file*, which represents an open file as associated with a process
+* **superblock**, which represents a specific mounted filesystem
+* **inode**, which represents a specific file
+* **dentry**, which represents a directory entry in a path
+* **file**, which represents an open file as associated with a process
 
 _note: VFS treats directories as normal files, so *dentry* isn't the
 same as a directory, but directory is another kind of file._
@@ -51,4 +51,5 @@ on _include/linux/fs.h_.
 
 # References (TBD)
 Linux Kernel Development book
+
 VFS manual page on kernel source (Documentation/filesystem/vfs.txt)
