@@ -190,20 +190,20 @@ int main(int argc, char *argv[])
 {
 	int err, i, text_len;
 	/* Socket related vars */
-        int sock_fd;
+	int sock_fd;
 	/* Crypto related buffers */
 	/* text to be encrypted */
 	char *plaintext;
 	/* encrypted data */
-        char ciphertext[AES_BLOCK_LEN];
+	char ciphertext[AES_BLOCK_LEN];
 	/* Different from what we use in normal TCP/IP socket programming,
 	 * that fills a sockaddr_in structure, here we work over a
 	 * sockaddr_alg one */
-        struct sockaddr_alg sa_alg = {
-                .salg_family = AF_ALG,
-                .salg_type = "skcipher",
-                .salg_name = "ctr(aes)"
-        };
+	struct sockaddr_alg sa_alg = {
+		.salg_family = AF_ALG,
+		.salg_type = "skcipher",
+		.salg_name = "ctr(aes)"
+	};
 
 	/* Get input from user */
 	if (argc > 1) {
@@ -221,13 +221,13 @@ int main(int argc, char *argv[])
 	 * Crypto API. SOCK_SEQPACKET is used because we always know the
 	 * maximum size of our data (no fragmentation) and we care about
 	 * getting things in order in case there are consecutive calls */
-        sock_fd = socket(AF_ALG, SOCK_SEQPACKET, 0);
+	sock_fd = socket(AF_ALG, SOCK_SEQPACKET, 0);
 	if (sock_fd < 0) {
 		perror("failed to allocate socket\n");
 		return -1;
 	}
 
-        err = bind(sock_fd, (struct sockaddr *)&sa_alg, sizeof(sa_alg));
+	err = bind(sock_fd, (struct sockaddr *)&sa_alg, sizeof(sa_alg));
 	if (err) {
 		perror("failed to bind socket, alg may not be supported\n");
 		return -EAFNOSUPPORT;
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
 
 	/* Once it's "configured", we tell the kernel to get ready for
 	 * receiving some requests */
-        fd = accept(sock_fd, NULL, 0);
+	fd = accept(sock_fd, NULL, 0);
 	if (fd < 0) {
 		perror("failed to open connection for the socket\n");
 		return -EBADF;
@@ -255,21 +255,21 @@ int main(int argc, char *argv[])
 		return err;
 
 	/* Print digest to output */
-        for (i = 0; i < AES_BLOCK_LEN; i++)
-                printf("%02x", (unsigned char)ciphertext[i]);
-        printf("\n");
+	for (i = 0; i < AES_BLOCK_LEN; i++)
+		printf("%02x", (unsigned char)ciphertext[i]);
+	printf("\n");
 
 	memset(plaintext, 0, text_len);
 	err = decrypt(plaintext, text_len, ciphertext);
 	if (err)
 		return err;
 
-        for (i = 0; i < text_len; i++)
-                printf("%c", (unsigned char)plaintext[i]);
-        printf("\n");
+	for (i = 0; i < text_len; i++)
+		printf("%c", (unsigned char)plaintext[i]);
+	printf("\n");
 
-        close(fd);
-        close(sock_fd);
+	close(fd);
+	close(sock_fd);
 
-        return 0;
+	return 0;
 }
