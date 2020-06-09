@@ -32,7 +32,7 @@
 #include <linux/err.h>
 
 /* Printing helper functions */
-#include "utils.h"
+#include "../utils.h"
 
 static int __init using_crypto_init(void)
 {
